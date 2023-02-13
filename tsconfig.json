@@ -1,10 +1,11 @@
 {
   "compilerOptions": {
+    "baseUrl": "./",
     "target": "es6",
     "module": "CommonJS",
     "sourceMap": true,
     "sourceRoot": "src",
     "outDir": "build",
-    "strict": true,
+    "strict": true
   }
 }
