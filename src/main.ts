@@ -2,7 +2,7 @@ import * as PromptSync from "prompt-sync";
 
 const prompt: PromptSync.Prompt = PromptSync({sigint:true});
 
-import { is_boolean, set_head, is_pair, list_ref, apply_in_underlying_javascript, pair, stringify, is_null, error, math_abs, math_PI, math_E, display, map, accumulate, length, parse, append, head, list, tail } from 'sicp';
+import { List, Pair, is_boolean, set_head, is_pair, list_ref, apply_in_underlying_javascript, pair, stringify, is_null, error, math_abs, math_PI, math_E, display, map, accumulate, length, parse, append, head, list, tail } from 'sicp';
 
 type Environment = List<Frame>;
 type Frame = Pair<List<Symbol>, List<Value>>;
@@ -454,7 +454,7 @@ function eval_sequence(stmts: List<Statement>, env: Environment): Value {
 function scan_out_declarations(component: Component): List<Symbol> {
     return is_sequence(component)
            ? accumulate(append,
-                        null,
+                        list(),
                         map(scan_out_declarations,
                             sequence_statements(component)))
            : is_declaration(component)

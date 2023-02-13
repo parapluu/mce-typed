@@ -1,27 +1,36 @@
-declare module 'sicp';
+declare module 'sicp' {
+    export type Pair<H, T> = [H, T];
+    export type List<T> = [T, List<T>] | null;
 
-type Pair<H, T> = [H, T];
-type List<T> = [T, List<T>] | null;
-
-declare function is_boolean(value: any): boolean;
-declare function set_head<H, T>(pair: Pair<H, T>, elem: H): Pair<H, T>;
-declare function is_pair(value: any): boolean;
-declare function list_ref(list: any, index: number): any;
-declare function apply_in_underlying_javascript(f: any, args: any): any;
-declare function pair<H,T>(head: H, tail: T): Pair<H, T>;
-declare function stringify(value: any): string;
-declare function is_null(value: any): boolean;
-declare function error(...args: [any]): any;
-declare function math_abs(value: number): number;
-declare const math_PI: number;
-declare const math_E: number;
-declare function display(...x: any[]): any;
-declare function map<H, T>(fun: (from: H) => T, list: List<H>): List<T>;
-declare function accumulate(x: any): any;
-declare function parse(x: any): any;
-declare function append<T>(a: List<T>, b: List<T>): List<T>;
-declare function head<H, T>(pair: Pair<H, T>): H;
-declare function list<T>(...elems: [T]): List<T>;
-declare function tail<H, T>(pair: Pair<H, T>): T;
-
+    export function is_boolean(value: any): boolean;
+    export function set_head<H, T>(pair: Pair<H, T>, elem: H): Pair<H, T>;
+    export function is_pair(value: any): boolean;
+    export function list_ref<L extends [A, null|[B, null|[C, null|[D, null]]]], A, B, C, D>(list: L, index: 0): A;
+    export function list_ref<L extends [A, null|[B, null|[C, null|[D, null]]]], A, B, C, D>(list: L, index: 1): B;
+    export function list_ref<L extends [A, null|[B, null|[C, null|[D, null]]]], A, B, C, D>(list: L, index: 2): C;
+    export function list_ref<L extends [A, null|[B, null|[C, null|[D, null]]]], A, B, C, D>(list: L, index: 3): D;
+    export function list_ref<T>(list: List<T>, index: number): T;
+    export function length<T>(list: List<T>): number;
+    export function apply_in_underlying_javascript(f: any, args: any): any;
+    export function pair<H,T>(head: H, tail: T): Pair<H, T>;
+    export function stringify(value: any): string;
+    export function is_null(value: any): value is null;
+    export function error(...args: any[]): any;
+    export function math_abs(value: number): number;
+    export const math_PI: number;
+    export const math_E: number;
+    export function display(...x: any[]): any;
+    export function map<H, T>(fun: (from: H) => T, list: List<H>): List<T>;
+    export function accumulate<A, T>(x: (a: T, b: A) => A, initial: A, list: List<T>): A;
+    export function parse(x: any): any;
+    export function append<T>(a: List<T>, b: List<T>): List<T>;
+    export function head<H, T>(pair: Pair<H, T>): H;
+    export function list<A>(a: A): Pair<A, null>;
+    export function list<A, B>(a: A, b: B): Pair<A, Pair<B, null>>;
+    export function list<A, B, C>(a: A, b: B, c: C): Pair<A, Pair<B, Pair<C, null>>>;
+    export function list<A, B, C, D>(a: A, b: B, c: C, d: D): Pair<A, Pair<B, Pair<C, Pair<D, null>>>>;
+    export function list<A, B, C, D, E>(a: A, b: B, c: C, d: D, e: E): Pair<A, Pair<B, Pair<C, Pair<D, Pair<E, null>>>>>;
+    export function list<T>(...elems: T[]): List<T>;
+    export function tail<H, T>(pair: Pair<H, T>): T;
+}
 

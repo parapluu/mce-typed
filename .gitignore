@@ -1,0 +1,5 @@
+node_modules
+
+# Normally one wouldn't add a lock file to a non-library project.
+# However, we already have the npm lock file. So no need for two.
+yarn.lock 
