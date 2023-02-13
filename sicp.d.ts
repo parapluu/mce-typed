@@ -5,7 +5,8 @@ declare module 'sicp' {
     export function is_boolean(value: any): boolean;
     export function set_head<H, T>(pair: Pair<H, T>, elem: H): Pair<H, T>;
     export function is_pair(value: any): boolean;
-    export function list_ref(list: any, index: number): any;
+    export function list_ref<T>(list: List<T>, index: number): T;
+    export function length<T>(list: List<T>): number;
     export function apply_in_underlying_javascript(f: any, args: any): any;
     export function pair<H,T>(head: H, tail: T): Pair<H, T>;
     export function stringify(value: any): string;
@@ -16,11 +17,14 @@ declare module 'sicp' {
     export const math_E: number;
     export function display(...x: any[]): any;
     export function map<H, T>(fun: (from: H) => T, list: List<H>): List<T>;
-    export function accumulate(x: any): any;
+    export function accumulate<A, T>(x: (a: T, b: A) => A, initial: A, list: List<T>): A;
     export function parse(x: any): any;
     export function append<T>(a: List<T>, b: List<T>): List<T>;
     export function head<H, T>(pair: Pair<H, T>): H;
-    export function list<T>(...elems: [T]): List<T>;
     export function tail<H, T>(pair: Pair<H, T>): T;
+
+    export function list<T>(...elems: [T]): List<T>;
+    // Because the above requires at least one argument
+    export function list<T>(): List<T>; 
 }
 

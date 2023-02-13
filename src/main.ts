@@ -454,7 +454,7 @@ function eval_sequence(stmts: List<Statement>, env: Environment): Value {
 function scan_out_declarations(component: Component): List<Symbol> {
     return is_sequence(component)
            ? accumulate(append,
-                        null,
+                        list(),
                         map(scan_out_declarations,
                             sequence_statements(component)))
            : is_declaration(component)
