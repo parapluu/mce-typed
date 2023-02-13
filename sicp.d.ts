@@ -11,7 +11,7 @@ declare module 'sicp' {
     export function pair<H,T>(head: H, tail: T): Pair<H, T>;
     export function stringify(value: any): string;
     export function is_null(value: any): boolean;
-    export function error(...args: [any]): any;
+    export function error(...args: any[]): any;
     export function math_abs(value: number): number;
     export const math_PI: number;
     export const math_E: number;
@@ -21,10 +21,7 @@ declare module 'sicp' {
     export function parse(x: any): any;
     export function append<T>(a: List<T>, b: List<T>): List<T>;
     export function head<H, T>(pair: Pair<H, T>): H;
+    export function list<T>(...elems: T[]): List<T>;
     export function tail<H, T>(pair: Pair<H, T>): T;
-
-    export function list<T>(...elems: [T]): List<T>;
-    // Because the above requires at least one argument
-    export function list<T>(): List<T>; 
 }
 
