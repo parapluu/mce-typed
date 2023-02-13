@@ -10,7 +10,7 @@ declare module 'sicp' {
     export function apply_in_underlying_javascript(f: any, args: any): any;
     export function pair<H,T>(head: H, tail: T): Pair<H, T>;
     export function stringify(value: any): string;
-    export function is_null(value: any): boolean;
+    export function is_null(value: any): value is null;
     export function error(...args: any[]): any;
     export function math_abs(value: number): number;
     export const math_PI: number;
