@@ -285,11 +285,11 @@ function incremental_transform(component: TaggedListComponent): Component {
         // return { tag: "literal", value: head(tail(literal)) };
     }
     function transform_application(app: TaggedListApplication): Application {
-        return list(head(app), transform_expression(head(tail(app))), map(tagged_list_to_record, head(tail(tail(app)))));
-        // return { tag: "application", function_expression: transform_expression(head(tail(app))), arguments: map(tagged_list_to_record, head(tail(tail(app)))) };
+        return list(head(app), transform_expression(head(tail(app))), map(incremental_transform, head(tail(tail(app)))));
+        // return { tag: "application", function_expression: transform_expression(head(tail(app))), arguments: map(incremental_transform, head(tail(tail(app)))) };
     }
     function transform_operator_combination(op: TaggedListOperatorCombination): OperatorCombination {
-        return append(list(head(op), head(tail(op)), map(transform_component, tail(tail(op)))));
+        return append(list(head(op), head(tail(op))), map(transform_component, tail(tail(op))));
         // const operator: Operator = head(tail(op));
         // const operands: List<Expression> = map(transform_expression, tail(tail(op)));
         // return head(op) === "unary_operator_combination"
@@ -325,8 +325,8 @@ function incremental_transform(component: TaggedListComponent): Component {
         // return { tag: "constant_declaration", name: transform_name(list_ref(decl, 1)), initialiser: transform_expression(list_ref(decl, 2)) };
     }
     function transform_assignment(assg: TaggedListAssignment): Assignment {
-        return list("assignment", transform_name(list_ref(assg, 1)), transform_component(list_ref(assg, 2)));
-        // return { tag: "assignment", name: transform_name(list_ref(assg, 1)), right_hand_side: transform_component(list_ref(assg, 2)) };
+        return list("assignment", transform_name(list_ref(assg, 1)), transform_expression(list_ref(assg, 2)));
+        // return { tag: "assignment", name: transform_name(list_ref(assg, 1)), right_hand_side: transform_expression(list_ref(assg, 2)) };
     }
 
     function transform_component(component: TaggedListComponent): Component {
