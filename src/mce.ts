@@ -151,37 +151,40 @@ export function tagged_list_to_record(component: TaggedListComponent): Component
         const operator: Operator = head(tail(op));
         const operands: List<Expression> = map(transform_expression, tail(tail(op)));
         return head(op) === "unary_operator_combination"
-            ? { tag: "unary_operator_combination", operator: operator, operand: list_ref(operands, 0) }
-            : { tag: "binary_operator_combination", operator: operator, left: list_ref(operands, 0), right: list_ref(operands, 1) };
+            ? { tag: "unary_operator_combination", operator: operator, operand: head(operands) }
+            : { tag: "binary_operator_combination", operator: operator,
+                left: head(operands), right: head(tail(operands)) };
     }
     function transform_conditional(cond: TaggedListConditional): Conditional {
-        return { tag: head(cond), predicate: transform_expression(list_ref(cond, 1)),
-                 consequent: transform_statement(list_ref(cond, 2)),
-                 alternative: transform_statement(list_ref(cond, 3)) };
+        return { tag: head(cond), predicate: transform_expression(head(tail(cond))),
+                 consequent: transform_statement(head(tail(tail(cond)))),
+                 alternative: transform_statement(head(tail(tail(tail(cond))))) };
     }
     function transform_lambda(lam: TaggedListLambda): Lambda {
-        return { tag: "lambda_expression", parameters: map(transform_name, list_ref(lam, 1)),
-                 body: transform_component(list_ref(lam, 2)) };
+        return { tag: "lambda_expression", parameters: map(transform_name, head(tail(lam))),
+                 body: transform_component(head(tail(tail(lam)))) };
     }
     function transform_sequence(seq: TaggedListSequence): Sequence {
-        return { tag: "sequence", statements: map(transform_component, list_ref(seq, 1)) };
+        return { tag: "sequence", statements: map(transform_component, head(tail(seq))) };
     }
     function transform_block(block: TaggedListBlock): Block {
-        return { tag: "block", body: map(transform_statement, list_ref(block, 0)) };
+        return { tag: "block", body: map(transform_statement, head(block)) };
     }
     function transform_return_statement(ret: TaggedListReturnStatement): ReturnStatement {
-        return { tag: "return_statement", return_expression: transform_expression(list_ref(ret, 1)) };
+        return { tag: "return_statement", return_expression: transform_expression(head(tail(ret))) };
     }
     function transform_function_declaration(fun: TaggedListFunction): Function {
-        return { tag: "function_declaration", name: transform_name(list_ref(fun, 1)),
-                 parameters: map(transform_name, list_ref(fun, 2)),
-                 body: map(transform_sequence, list_ref(fun, 3)) };
+        return { tag: "function_declaration", name: transform_name(head(tail(fun))),
+                 parameters: map(transform_name, head(tail(tail(fun)))),
+                 body: map(transform_sequence, head(tail(tail(tail(fun))))) };
     }
     function transform_declaration(decl: TaggedListDeclaration): Declaration {
-        return { tag: "constant_declaration", name: transform_name(list_ref(decl, 1)), initialiser: transform_expression(list_ref(decl, 2)) };
+        return { tag: "constant_declaration", name: transform_name(head(tail(decl))),
+                 initialiser: transform_expression(head(tail(tail(decl)))) };
     }
     function transform_assignment(assg: TaggedListAssignment): Assignment {
-        return { tag: "assignment", name: transform_name(list_ref(assg, 1)), right_hand_side: transform_expression(list_ref(assg, 2)) };
+        return { tag: "assignment", name: transform_name(head(tail(assg))),
+                 right_hand_side: transform_expression(head(tail(tail(assg)))) };
     }
 
     function transform_component(component: TaggedListComponent): Component {
