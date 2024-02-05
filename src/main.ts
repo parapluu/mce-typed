@@ -457,9 +457,9 @@ function is_primitive_function(fun: Value): fun is Primitive {
 function primitive_implementation(fun: Primitive): (..._: any[]) => any { return head(tail(fun)); }
 
 type PrimitiveFunction = Pair<string, Pair<any, null>>;
-type PrimitiveConstant = Pair<string, Pair<any, null>>;
+type PrimitiveConstant = Pair<string, Pair<undefined | number, null>>;
 
-const primitive_functions:List<PrimitiveFunction> = 
+const primitive_functions: List<PrimitiveFunction> = 
   list(
        pair("head",    pair(head             , null)),
        pair("tail",    pair(tail             , null)),
@@ -483,9 +483,9 @@ const primitive_functions:List<PrimitiveFunction> =
        pair(">=",      pair((x: any, y: any) => x >=  y, null)),
        pair("!",       pair((x: any)         =>   !   x, null))
        );
-const primitive_function_symbols =
+const primitive_function_symbols: List<string> =
     map(head, primitive_functions);
-const primitive_function_objects =
+const primitive_function_objects: List<PrimitiveFunction> =
     map((fun: PrimitiveFunction) => pair("primitive", pair(head(tail(fun)), null)),
         primitive_functions);
 
@@ -496,12 +496,12 @@ const primitive_constants: List<PrimitiveConstant> = list(
                                  pair("math_E",    pair(math_E, null)),
                                  pair("NaN",       pair(NaN, null))
                                 );
-const primitive_constant_symbols =
+const primitive_constant_symbols: List<string> =
     map(head, primitive_constants);
-const primitive_constant_values =
+const primitive_constant_values: List<undefined|number> =
     map((c: PrimitiveConstant) => head(tail(c)), primitive_constants);
 
-function apply_primitive_function(fun: Primitive, arglist: List<Value>) {
+function apply_primitive_function(fun: Primitive, arglist: List<Value>): any {
     return apply_in_underlying_javascript(
                primitive_implementation(fun), arglist);
 }
