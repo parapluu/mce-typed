@@ -3,4 +3,5 @@ module.exports = {
     "^.+\\.ts?$": "ts-jest",
   },
   testPathIgnorePatterns: ["./build"],
+  collectCoverage: true
 };
