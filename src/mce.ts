@@ -21,22 +21,21 @@ type TaggedListComponent = TaggedListStatement | TaggedListExpression;
 
 type TaggedListStatement = TaggedListBlock | TaggedListSequence |
     TaggedListDeclaration | TaggedListAssignment | TaggedListReturnStatement;
-type TaggedListBlock = ["block", Pair<TaggedListStatement, null>];
-type TaggedListSequence = ["sequence", Pair<List<TaggedListStatement>, null>];
-type TaggedListDeclaration = TaggedListConstant | TaggedListFunction; // | TaggedListVariable;
-type TaggedListFunction = ["function_declaration", [Name, [List<Name>, [List<TaggedListSequence>, null]]]];
+type TaggedListBlock = ["block", [TaggedListComponent, null]];
+type TaggedListSequence = ["sequence", [List<TaggedListStatement>, null]];
+type TaggedListDeclaration = TaggedListConstant | TaggedListFunction;
+type TaggedListFunction = ["function_declaration", [Name, [List<Name>, [TaggedListComponent, null]]]];
 type TaggedListConstant = ["constant_declaration", [Name, [TaggedListExpression, null]]];
-//type TaggedListVariable= ["variable_declaration", [Name, [TaggedListExpression, null]]];
 type TaggedListAssignment = ["assignment", [Name, [TaggedListExpression, null]]];
 type TaggedListReturnStatement = ["return_statement", [TaggedListExpression, null]];
 
 type TaggedListExpression = TaggedListConditional | TaggedListLambda |
     TaggedListName | TaggedListLiteral | TaggedListApplication | TaggedListOperatorCombination;
-type TaggedListConditional = ["conditional_expression", [TaggedListExpression, [TaggedListStatement, [TaggedListStatement, null]]]];
+type TaggedListConditional = ["conditional_expression", [TaggedListExpression, [TaggedListComponent, [TaggedListComponent, null]]]];
 type TaggedListLambda = ["lambda_expression", [List<Name>, [TaggedListComponent, null]]];
 type TaggedListName = ["name", [Symbol, null]];
 type TaggedListLiteral = ["literal", [Value, null]];
-type TaggedListApplication = ["application", [TaggedListExpression, [List<TaggedListExpression>, null]]]; // first was Expression
+type TaggedListApplication = ["application", [TaggedListExpression, [List<TaggedListExpression>, null]]];
 type TaggedListOperatorCombination = TaggedListUnary | TaggedListBinary;
 type TaggedListUnary = ["unary_operator_combination", [Operator, [TaggedListExpression, null]]];
 type TaggedListBinary= ["binary_operator_combination", [Operator, [TaggedListExpression, [TaggedListExpression, null]]]];
@@ -45,16 +44,16 @@ type TaggedListBinary= ["binary_operator_combination", [Operator, [TaggedListExp
 type Component = Statement | Expression;
 
 type Statement = Block | Sequence | Declaration | Assignment | ReturnStatement;
-type Block = { tag: "block", body: Pair<Statement, null> };
-type Sequence = { tag: "sequence", statements: Pair<List<Statement>, null> };
+type Block = { tag: "block", body: Component };
+type Sequence = { tag: "sequence", statements: List<Statement> };
 type Declaration = Constant | Function;
-type Function = { tag: "function_declaration", name: Name, parameters: List<Name>, body: List<Sequence> };
+type Function = { tag: "function_declaration", name: Name, parameters: List<Name>, body: Component };
 type Constant = { tag: "constant_declaration", name: Name, initialiser: Expression };
 type Assignment = { tag: "assignment", name: Name, right_hand_side: Expression };
 type ReturnStatement = { tag: "return_statement", return_expression: Expression };
 
 type Expression = Conditional | Lambda | Name | Literal | Application | OperatorCombination;
-type Conditional = { tag: "conditional_expression", predicate: Expression, consequent: Statement, alternative: Statement };
+type Conditional = { tag: "conditional_expression", predicate: Expression, consequent: Component, alternative: Component };
 type Lambda = { tag: "lambda_expression", parameters: List<Name>, body: Component };
 type Name = { tag: "name", symbol: Symbol };
 type Literal = { tag: "literal", value: Value };
@@ -64,8 +63,8 @@ type Operator = "+" | "-" | "*" | "/";
 type Unary = { tag: "unary_operator_combination", operator: Operator, operand: Expression };
 type Binary= { tag: "binary_operator_combination", operator: Operator, left: Expression, right: Expression };
 
+// these can remain as tagged lists (but you are free to change them too)
 type Value = string | number | boolean | undefined | null | ReturnValue | CompoundFunction | Primitive;
-
 type ReturnValue = ["return_value", [Value, null]];
 type CompoundFunction = ["compound_function", [List<Symbol>, [Component, [Environment, null]]]];
 type Primitive = ["primitive", [(..._: any[]) => any, null]];
@@ -101,7 +100,6 @@ export function tagged_list_to_record(component: TaggedListComponent): Component
     }
     function is_declaration(component: TaggedListComponent): component is TaggedListDeclaration {
         return is_tagged_list(component, "constant_declaration") ||
-            is_tagged_list(component, "variable_declaration") ||
             is_tagged_list(component, "function_declaration");
     }
     function is_lambda_expression(component: TaggedListComponent): component is TaggedListLambda {
@@ -114,8 +112,7 @@ export function tagged_list_to_record(component: TaggedListComponent): Component
         return is_tagged_list(component, "return_statement");
     }
     function is_conditional(component: TaggedListComponent): component is TaggedListConditional {
-        return is_tagged_list(component, "conditional_expression") ||
-            is_tagged_list(component, "conditional_statement");
+        return is_tagged_list(component, "conditional_expression");
     }
     function is_sequence(stmt: TaggedListComponent): stmt is TaggedListSequence {
         return is_tagged_list(stmt, "sequence");
@@ -157,8 +154,8 @@ export function tagged_list_to_record(component: TaggedListComponent): Component
     }
     function transform_conditional(cond: TaggedListConditional): Conditional {
         return { tag: head(cond), predicate: transform_expression(head(tail(cond))),
-                 consequent: transform_statement(head(tail(tail(cond)))),
-                 alternative: transform_statement(head(tail(tail(tail(cond))))) };
+                 consequent: transform_component(head(tail(tail(cond)))),
+                 alternative: transform_component(head(tail(tail(tail(cond))))) };
     }
     function transform_lambda(lam: TaggedListLambda): Lambda {
         return { tag: "lambda_expression", parameters: map(transform_name, head(tail(lam))),
@@ -168,15 +165,16 @@ export function tagged_list_to_record(component: TaggedListComponent): Component
         return { tag: "sequence", statements: map(transform_component, head(tail(seq))) };
     }
     function transform_block(block: TaggedListBlock): Block {
-        return { tag: "block", body: map(transform_statement, head(block)) };
+        return { tag: "block", body: transform_component(head(tail(block))) };
     }
     function transform_return_statement(ret: TaggedListReturnStatement): ReturnStatement {
         return { tag: "return_statement", return_expression: transform_expression(head(tail(ret))) };
     }
     function transform_function_declaration(fun: TaggedListFunction): Function {
-        return { tag: "function_declaration", name: transform_name(head(tail(fun))),
+        return { tag: "function_declaration",
+                 name: transform_name(head(tail(fun))),
                  parameters: map(transform_name, head(tail(tail(fun)))),
-                 body: map(transform_sequence, head(tail(tail(tail(fun))))) };
+                 body: transform_component(head(tail(tail(tail(fun))))) };
     }
     function transform_declaration(decl: TaggedListDeclaration): Declaration {
         return { tag: "constant_declaration", name: transform_name(head(tail(decl))),
@@ -237,7 +235,6 @@ export function tagged_list_to_record(component: TaggedListComponent): Component
 // functions from SICP JS 4.1.1
 
 export function evaluate(component: Component, env: Environment): Value {
-    // display(component);
     return is_literal(component)
            ? literal_value(component)
            : is_name(component)
@@ -395,7 +392,6 @@ function assignment_value_expression(component: Assignment): Expression {
 
 function is_declaration(component: Component): component is Declaration {
     return is_tagged_list(component, "constant_declaration") ||
-           is_tagged_list(component, "variable_declaration") ||
            is_tagged_list(component, "function_declaration");
 }
 
@@ -447,13 +443,12 @@ function function_decl_to_constant_decl(component: Function): Constant {
 function is_return_statement(component: Component): component is ReturnStatement {
    return is_tagged_list(component, "return_statement");
 }
-function return_expression(component: ReturnStatement) {
+function return_expression(component: ReturnStatement): Expression {
    return head(tail(component));
 }
 
 function is_conditional(component: Component): component is Conditional {
-    return is_tagged_list(component, "conditional_expression") ||
-           is_tagged_list(component, "conditional_statement");
+    return is_tagged_list(component, "conditional_expression");
 }
 function conditional_predicate(component: Conditional): Expression {
    return head(tail(component));
@@ -487,7 +482,7 @@ function is_last_statement(stmts: NonEmptyList<Statement>): boolean {
 function is_block(component: Component): component is Block {
     return is_tagged_list(component, "block");
 }
-function block_body(component: Block): Statement {
+function block_body(component: Block): Component {
     return head(tail(component));
 }
 
@@ -515,7 +510,7 @@ function second_operand(component: Binary): Expression {
     return head(tail(tail(tail(component))));
 }
 
-function make_application(function_expression: Name, argument_expressions: List<Expression>): Application {
+function make_application(function_expression: Expression, argument_expressions: List<Expression>): Application {
     return pair("application",
                 pair(function_expression, pair(argument_expressions, null)));
 }
@@ -533,7 +528,7 @@ function operator_combination_to_application(component: OperatorCombination): Ap
 function is_application(component: Component): component is Application {
    return is_tagged_list(component, "application");
 }
-function function_expression(component: Application): Name {
+function function_expression(component: Application): Expression {
    return head(tail(component));
 }
 function arg_expressions(component: Application): List<Expression> {
@@ -577,19 +572,24 @@ function return_value_content(value: ReturnValue): Value {
     return head(tail(value));
 }
 
-function enclosing_environment(env: NonEmptyList<Frame>): Environment { return tail(env); }
+function enclosing_environment(env: NonEmptyList<Frame>): Environment {
+    return tail(env);
+}
 
 function first_frame(env: NonEmptyList<Frame>): Frame{ return head(env); }
 
 const the_empty_environment: Environment = null; // Must be null
 
-function make_frame(symbols: List<Symbol>, values: List<Value>): Frame { return pair(symbols, values); }
+function make_frame(symbols: List<Symbol>, values: List<Value>): Frame {
+    return pair(symbols, values);
+}
 
 function frame_symbols(frame: Frame): List<Symbol> { return head(frame); }
 
 function frame_values(frame: Frame): List<Value> { return tail(frame); }
 
-export function extend_environment(symbols: List<Symbol>, vals: List<Value>, base_env: Environment): Environment {
+export function extend_environment(symbols: List<Symbol>, vals: List<Value>,
+    base_env: Environment): Environment {
     return length(symbols) === length(vals)
            ? pair(make_frame(symbols, vals), base_env)
            : length(symbols) < length(vals)
@@ -734,7 +734,8 @@ export function driver_loop(env: Environment, history: string): void {
     if (is_null(input)) {
         console.log(history + "\n--- session end ---\n");
     } else {
-        const program = parse(input);
+        const program = parse(input);   // comment this line and uncomment next
+        // const program = tagged_list_to_record(parse(input));
         const locals = scan_out_declarations(program);
         const unassigneds = list_of_unassigned(locals);
         const program_env = extend_environment(
