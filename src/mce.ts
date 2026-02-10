@@ -343,7 +343,7 @@ function eval_assignment(component: Assignment, env: Environment): Value {
     return value;
 }
 
-function eval_declaration(component: Declaration, env: Environment): void {
+function eval_declaration(component: Declaration, env: Environment): Value {
     assign_symbol_value(
         declaration_symbol(component),
         evaluate(declaration_value_expression(component), env),
